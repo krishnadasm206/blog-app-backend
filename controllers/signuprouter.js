@@ -1,23 +1,34 @@
-const express=require("express")
+const express = require("express")
 const signupmodel = require("../model/signupmodel")
 
-const router=express.Router()
+const router = express.Router()
+
+const bcrypt = require("bcryptjs")
+
+hashPasswordGenerator = async (pass) => {
+    const salt = await bcrypt.genSalt(10)
+    return bcrypt.hash(pass, salt)
+}
+
+router.post("/signup", async (req, res) => {
+
+    let { data } = { "data": req.body }
+    let password = data.password
+    hashPasswordGenerator(password).then(
+        (hashedPassword) => {
+            console.log(hashedPassword)
+            data.password = hashedPassword
+            console.log(data)
+            let users = new signupmodel(data)
+            let result =  users.save()
+            res.json({
+                status: "success"
+            })
+        }
+    )
 
 
 
-router.post("/signup",async(req,res)=>{
-    let {data}={"data":req.body}
-    let password=data.password
-
-    console.log(password)
-    
-    
-    //let users=new signupmodel(data)
-    //let result=await users.save()
-
-    res.json({
-        status:"success"
-    })
 })
 
-module.exports=router
+module.exports = router
